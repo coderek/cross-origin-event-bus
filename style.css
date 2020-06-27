@@ -1,0 +1,36 @@
+html,body {
+	margin: 0;
+	font-family: 'Open Sans Condensed', sans-serif;
+}
+
+body {
+  width: 90%;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+form {
+  width: 60%;
+  margin: 10px;
+}
+
+p {
+  margin: 10px 0;
+}
+
+h1, p {
+  text-align: center;
+}
+
+h1 {
+  font-family: 'Lobster Two', cursive;
+}
+
+ul {
+  width: 90%;
+}
+
+iframe {
+  display: inline-box;
+  width: 400px;
+}

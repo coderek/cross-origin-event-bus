@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <title>Channel messaging demo</title>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300|Lobster+Two' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="style.css">
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <h1>Cross origin Channel messaging demo</h1>
+    <p id="message-output">Message not yet sent</p>
+
+    <form>
+      <label for="message-input">Send a message</label>
+      <input type="text" id="message-input" autofocus>
+      <button>Send Message</button>
+    </form>
+
+    <iframe src="http://zeng2.qiang/page3.html" width='480' height='320'></iframe>
+    <iframe src="http://zeng3.qiang/page3.html" width='480' height='320'></iframe>
+    <script type="module" src="./eventbus.js"></script>
+    <script type="module">
+      import { EventBus } from './eventbus.js'
+
+      var input = document.getElementById('message-input');
+      var output = document.getElementById('message-output');
+      var button = document.querySelector('button');
+      var iframe = document.querySelector('iframe');
+
+      const eb = new EventBus({
+        callback,
+      })
+
+      button.addEventListener('click', onClick);
+
+      function onClick(e) {
+        e.preventDefault();
+        eb.send({type: 'input', value: input.value})
+      }
+
+      function callback(e) {
+        if (e.data.type == 'added') {
+          output.innerHTML = e.data.value;
+          input.value = '';
+        }
+      }
+    </script>
+  </body>
+  <script>
+  </script>
+</html>
