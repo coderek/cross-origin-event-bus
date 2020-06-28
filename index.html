@@ -25,14 +25,14 @@
     <iframe src="http://zeng3.qiang/page3.html" width='480' height='320'></iframe>
     <script type="module" src="./eventbus.js"></script>
     <script type="module">
-      import { EventBus } from './eventbus.js'
+      import { CrossOriginEventBus } from './eventbus.js'
 
       var input = document.getElementById('message-input');
       var output = document.getElementById('message-output');
       var button = document.querySelector('button');
       var iframe = document.querySelector('iframe');
 
-      const eb = new EventBus()
+      const eb = new CrossOriginEventBus()
 
       document.querySelectorAll('iframe').forEach((iframe) => {
         eb.controller.addChild(iframe)
@@ -49,8 +49,12 @@
         output.innerHTML = e.data.value;
         input.value = '';
       })
+
+      eb.registerService('test', () => {
+        return new Promise(res => {
+          setTimeout(() => res('hahaha'), 3000)
+        })
+      })
     </script>
   </body>
-  <script>
-  </script>
 </html>

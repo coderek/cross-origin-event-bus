@@ -21,9 +21,9 @@
     </form>
     <script type="module" src="./eventbus.js"></script>
     <script type="module">
-      import { EventBus } from './eventbus.js'
+      import { CrossOriginEventBus } from './eventbus.js'
       var list = document.querySelector('ul');
-      const eb = new EventBus({name: 'page3'})
+      const eb = new CrossOriginEventBus({name: 'page3'})
       var input = document.getElementById('message-input');
       var button = document.querySelector('button');
 
@@ -44,6 +44,7 @@
         list.appendChild(listItem);
         eb.send({type: 'added', value: 'Message received by IFrame: "' + e.data.value + '"'});
       })
+      eb.request('test').then((resp) => console.log('done', resp))
     </script>
   </body>
 </html>

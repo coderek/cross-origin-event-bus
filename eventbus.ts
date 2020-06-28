@@ -10,9 +10,9 @@ function p(n: number, size=2) {
 }
 
 /**
- * Simple uuid
+ * Simple UUID
  */
-function uuid(contextId: number) {
+function UUID(contextId: number) {
   let id = 'Cn-xxxx-MMddhhmmss'
   id = id.replace('n', p(contextId, 4))
 
@@ -96,8 +96,9 @@ type IResponder = (...any) => Promise<any>
 interface IEventBus  {
   handshake: (MessageEvent) => void
   send: (any) => void
-  request: (key: string, args?: any[]) => Promise<any>
-  register: (key: string, IResponder) => void
+  request: (key: string, args: any) => Promise<any>
+  registerService: (key: string, IResponder) => void
+  unregisterService: (key: string) => void
   subscribe: (evName: string, ICallback) => void
   unsubscribe: (evName: string, ICallback) => void
 }
@@ -107,7 +108,10 @@ interface IOption {
   name?: string
 }
 
-export class EventBus implements IEventBus {
+type IServiceFn = (any) => Promise<any>
+type IRequestFn = (string, any) => Promise<any>
+
+export class CrossOriginEventBus implements IEventBus {
 
   private id: number
   private callback?: (any) => void
@@ -115,6 +119,10 @@ export class EventBus implements IEventBus {
   private _controller?: EventBusController
   private name: string
   private subscriptions: Map<string, ICallback[]>
+  private tasks: Map<string, ICallback[]>
+  private services: Map<string, IServiceFn>
+  private pendingTasks: Function[]
+  private state: string
 
   constructor({callback, name}: IOption = {} ) {
     if (this.isParent) {
@@ -123,11 +131,19 @@ export class EventBus implements IEventBus {
     this.callback = callback
     this.name = name
     this.subscriptions = new Map()
+    this.tasks = new Map()
+    this.services = new Map()
+    this.pendingTasks = []
+    this.state = 'uninitialized'
     window.addEventListener('message', this.handshake)
   }
 
   private get isParent () : boolean {
     return window.parent === window
+  }
+
+  private get isReady () : boolean {
+    return this.state === 'ready'
   }
 
   private get controller () {
@@ -148,26 +164,86 @@ export class EventBus implements IEventBus {
         id,
       })
       window.removeEventListener('message', this.handshake)
+      this.state = 'ready'
+      this.clearBuffers()
+    }
+  }
+
+  clearBuffers() {
+    while (this.pendingTasks.length) {
+      this.pendingTasks.pop()()
     }
   }
 
   private onMessage(e) {
     const { type } = e.data
+    switch (type) {
+      case 'response': {
+        const { uuid, response } = e.data
+        if (this.tasks.has(uuid)) {
+          this.tasks.get(uuid)[0](response)
+          this.tasks.delete(uuid)
+        }
+        break
+      }
+      case 'request': {
+        const { key, uuid, payload } = e.data
+        if (this.services.has(key)) {
+          const serviceFn = this.services.get(key)
+          const doRespondFail = this.doRespond.bind(this, uuid, false)
+          serviceFn(payload)
+            .then(this.doRespond.bind(this, uuid, true), doRespondFail)
+            .catch(doRespondFail)
+        }
+        break
+      }
+    }
     if (this.subscriptions.has(type)) {
       this.subscriptions.get(type).forEach(cb => cb(e))
     }
     this.callback && this.callback(e)
   }
 
+  private doRespond(uuid, success, response) {
+    this.send({
+      type: 'response',
+      uuid,
+      response,
+      success
+    })
+  }
+
   send(msg) {
     this.outPort.send(msg)
   }
 
-  request(key) {
-    return Promise.resolve(true)
+  request(key: string, args: any) {
+    const uuid = UUID(this.id)
+    const req = () => {
+      this.send({
+        type: 'request',
+        key,
+        uuid,
+        payload: args
+      })
+    }
+    if (this.isReady) {
+      req()
+    } else {
+      this.pendingTasks.push(req.bind(this))
+    }
+
+    return new Promise((resolve, reject) => {
+      this.tasks.set(uuid, [resolve])
+    })
   }
 
-  register(key, responder) {
+  registerService(key, responder) {
+    this.services.set(key, responder)
+  }
+
+  unregisterService(key) {
+    this.services.delete(key)
   }
 
   subscribe(evName, cb) {
