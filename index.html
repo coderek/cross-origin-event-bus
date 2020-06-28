@@ -32,8 +32,10 @@
       var button = document.querySelector('button');
       var iframe = document.querySelector('iframe');
 
-      const eb = new EventBus({
-        callback,
+      const eb = new EventBus()
+
+      document.querySelectorAll('iframe').forEach((iframe) => {
+        eb.controller.addChild(iframe)
       })
 
       button.addEventListener('click', onClick);
@@ -43,12 +45,10 @@
         eb.send({type: 'input', value: input.value})
       }
 
-      function callback(e) {
-        if (e.data.type == 'added') {
-          output.innerHTML = e.data.value;
-          input.value = '';
-        }
-      }
+      eb.subscribe('added', (e) => {
+        output.innerHTML = e.data.value;
+        input.value = '';
+      })
     </script>
   </body>
   <script>

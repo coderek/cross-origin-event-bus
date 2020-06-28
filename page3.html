@@ -23,7 +23,7 @@
     <script type="module">
       import { EventBus } from './eventbus.js'
       var list = document.querySelector('ul');
-      const eb = new EventBus({ callback })
+      const eb = new EventBus({name: 'page3'})
       var input = document.getElementById('message-input');
       var button = document.querySelector('button');
 
@@ -34,21 +34,16 @@
         eb.send({type: 'input', value: input.value})
       }
 
+      eb.subscribe('added', () => {
+        input.value = '';
+      })
 
-      function callback(e) {
-        if (e.data.type == 'added') {
-          input.value = '';
-        }
-
-        if (e.data.type == 'all_ready') {
-          console.log('all ready')
-        } else if (e.data.type == 'input') {
-          var listItem = document.createElement('li');
-          listItem.textContent = e.data.value;
-          list.appendChild(listItem);
-          eb.send({type: 'added', value: 'Message received by IFrame: "' + e.data.value + '"'});
-        }
-      }
+      eb.subscribe('input', (e) => {
+        var listItem = document.createElement('li');
+        listItem.textContent = e.data.value;
+        list.appendChild(listItem);
+        eb.send({type: 'added', value: 'Message received by IFrame: "' + e.data.value + '"'});
+      })
     </script>
   </body>
 </html>
