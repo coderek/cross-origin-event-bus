@@ -4,6 +4,38 @@ function nextId() {
   return idSeq ++
 }
 
+// padding with 0
+function p(n: number, size=2) {
+  return (n/Math.pow(10, size)).toFixed(10).substring(2, 2+size)
+}
+
+/**
+ * Simple uuid
+ */
+function uuid(contextId: number) {
+  let id = 'Cn-xxxx-MMddhhmmss'
+  id = id.replace('n', p(contextId, 4))
+
+  const now = new Date()
+  id = id.replace('MM', p(now.getMonth()))
+  id = id.replace('dd', p(now.getDate()))
+  id = id.replace('hh', p(now.getHours()))
+  id = id.replace('mm', p(now.getMinutes()))
+  id = id.replace('ss', p(now.getSeconds()))
+
+  // 4 random ch
+  const length = Math.pow(26, 4)
+  let randOffset = Math.floor(Math.random() * length)
+  let text = ''
+  while (randOffset > 0) {
+    const alpha = randOffset % 26
+    text += String.fromCharCode(65 + alpha)
+    randOffset = Math.floor(randOffset / 26)
+  }
+  id = id.replace('xxxx', text)
+  return id
+}
+
 class OutPort {
   outPort
 
@@ -80,13 +112,13 @@ export class EventBus implements IEventBus {
   private id: number
   private callback?: (any) => void
   private outPort: OutPort
-  private controller?: EventBusController
+  private _controller?: EventBusController
   private name: string
   private subscriptions: Map<string, ICallback[]>
 
   constructor({callback, name}: IOption = {} ) {
     if (this.isParent) {
-      this.controller = new EventBusController()
+      this._controller = new EventBusController()
     }
     this.callback = callback
     this.name = name
@@ -94,8 +126,16 @@ export class EventBus implements IEventBus {
     window.addEventListener('message', this.handshake)
   }
 
-  private get isParent () {
+  private get isParent () : boolean {
     return window.parent === window
+  }
+
+  private get controller () {
+    if (this.isParent) {
+      return this._controller
+    } else {
+      throw "Controller only exists in the parent window"
+    }
   }
 
   handshake = (e) => {
