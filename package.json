@@ -1,0 +1,13 @@
+{
+  "name": "xo-bus",
+  "version": "0.0.1",
+  "description": "Cross Origin Event Bus ",
+  "main": "index.js",
+  "repository": "git@github.com:coderek/cross-origin-event-bus.git",
+  "author": "Derek Zeng <derek.zeng@ninjavan.co>",
+  "license": "MIT",
+
+  "scripts": {
+    "build": "tsc src/eventbus.ts -m es2015 -t es2015 --outDir lib"
+  }
+}
