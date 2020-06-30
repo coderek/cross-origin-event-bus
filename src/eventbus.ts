@@ -191,9 +191,13 @@ export class CrossOriginEventBus implements IEventBus {
         if (this.services.has(key)) {
           const serviceFn = this.services.get(key)
           const doRespondFail = this.doRespond.bind(this, uuid, false)
-          serviceFn(payload)
-            .then(this.doRespond.bind(this, uuid, true), doRespondFail)
-            .catch(doRespondFail)
+          const res = serviceFn(payload)
+          if (!res || typeof res.then !== 'function') {
+            this.doRespond(uuid, true, res)
+          } else {
+            res.then(this.doRespond.bind(this, uuid, true), doRespondFail)
+              .catch(doRespondFail)
+          }
         }
         break
       }
