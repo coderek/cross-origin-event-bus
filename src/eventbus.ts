@@ -214,7 +214,12 @@ export class CrossOriginEventBus implements IEventBus {
   }
 
   send(msg) {
-    this.outPort.send(msg)
+    const req = () => this.outPort.send(msg)
+    if (this.isReady) {
+      req()
+    } else {
+      this.pendingTasks.push(req.bind(this))
+    }
   }
 
   request(key: string, args: any) {

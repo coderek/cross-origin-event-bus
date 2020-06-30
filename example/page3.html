@@ -19,9 +19,8 @@
       <input type="text" id="message-input" autofocus>
       <button>Send Message</button>
     </form>
-    <script type="module" src="http://domain3.local/lib/eventbus.js"></script>
-    <script type="module">
-      import { CrossOriginEventBus } from '../lib/eventbus.js'
+    <script src="http://domain3.local/lib/eventbus.js"></script>
+    <script >
       var list = document.querySelector('ul');
       const eb = new CrossOriginEventBus({name: 'page3'})
       var input = document.getElementById('message-input');

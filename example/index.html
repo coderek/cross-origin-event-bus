@@ -23,9 +23,8 @@
 
     <iframe src="http://domain2.local/example/page3.html" width='480' height='320'></iframe>
     <iframe src="http://domain3.local/example/page3.html" width='480' height='320'></iframe>
-    <script type="module" src="http://domain1.local/lib/eventbus.js"></script>
-    <script type="module">
-      import { CrossOriginEventBus } from '../lib/eventbus.js'
+    <script src="http://domain1.local/lib/eventbus.js"></script>
+    <script>
 
       var input = document.getElementById('message-input');
       var output = document.getElementById('message-output');
