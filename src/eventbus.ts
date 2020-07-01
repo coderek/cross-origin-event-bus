@@ -50,10 +50,10 @@ class OutPort {
 }
 
 class EventBusController {
-  private outPorts: OutPort[]
+  private outPorts: Map<any, OutPort>
 
   constructor() {
-    this.outPorts = []
+    this.outPorts = new Map()
     this.addChild(window)
   }
 
@@ -61,8 +61,12 @@ class EventBusController {
     this.initChildContext(context)
   }
 
+  removeChild(context) {
+    this.outPorts.delete(context)
+  }
+
   private broadcast(msg) {  
-    for (const out of this.outPorts) {
+    for (const out of this.outPorts.values()) {
       out.send(msg)
     }
   } 
@@ -71,13 +75,11 @@ class EventBusController {
     const channel = new MessageChannel()
     if (context === window) {
       context.postMessage({ type: 'init', id: nextId() }, '*', [channel.port2]);
-      this.outPorts.push(new OutPort(channel.port1, this.onControllerEvent.bind(this)))
     } else {
-      context.addEventListener("load", () => {
-        context.contentWindow.postMessage({ type: 'init', id: nextId() }, '*', [channel.port2]);
-        this.outPorts.push(new OutPort(channel.port1, this.onControllerEvent.bind(this)))
-      })
+      context.contentWindow.postMessage({ type: 'init', id: nextId() }, '*', [channel.port2]);
     }
+    const port = new OutPort(channel.port1, this.onControllerEvent.bind(this))
+    this.outPorts.set(context, port)
   }
 
   private onControllerEvent(e) {
@@ -113,7 +115,7 @@ type IRequestFn = (string, any) => Promise<any>
 
 export class CrossOriginEventBus implements IEventBus {
 
-  private id: number
+  private id: number // given by host after handshake
   private callback?: (any) => void
   private outPort: OutPort
   private _controller?: EventBusController
@@ -129,7 +131,7 @@ export class CrossOriginEventBus implements IEventBus {
       this._controller = new EventBusController()
     }
     this.callback = callback
-    this.name = name
+    this.name = this.name || location.host
     this.subscriptions = new Map()
     this.tasks = new Map()
     this.services = new Map()
@@ -233,6 +235,7 @@ export class CrossOriginEventBus implements IEventBus {
         type: 'request',
         key,
         uuid,
+        name: this.name,
         payload: args
       })
     }
