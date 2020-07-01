@@ -12,6 +12,7 @@
     <![endif]-->
   </head>
   <body>
+    <h2>Page 2</h2>
     <ul></ul>
 
     <form>
@@ -19,7 +20,7 @@
       <input type="text" id="message-input" autofocus>
       <button>Send Message</button>
     </form>
-    <script src="http://localhost:/lib/eventbus.js"></script>
+    <script src="http://localhost:8002/lib/eventbus.js"></script>
     <script >
       var list = document.querySelector('ul');
       const eb = new CrossOriginEventBus({name: 'page3'})

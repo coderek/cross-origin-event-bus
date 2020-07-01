@@ -15,15 +15,21 @@
     <h1>Cross origin Channel messaging demo</h1>
     <p id="message-output">Message not yet sent</p>
 
-    <form>
+    <div onclick="clicked()">
       <label for="message-input">Send a message</label>
       <input type="text" id="message-input" autofocus>
       <button>Send Message</button>
-    </form>
+      <button onclick='reload()'>reload</button>
+      <div id="debug"></div>
+    </div>
 
-    <iframe src="http://domain2.local/example/page3.html" width='480' height='320'></iframe>
-    <iframe src="http://domain3.local/example/page3.html" width='480' height='320'></iframe>
-    <script src="http://domain1.local/lib/eventbus.js"></script>
+    <div>
+      <div>
+        <iframe src="http://localhost:8001/example/page1.html" width='480' height='320'></iframe>
+        <iframe src="http://localhost:8002/example/page2.html" width='480' height='320'></iframe>
+      </div>
+    </div>
+    <script src="http://localhost:8000/lib/eventbus.js"></script>
     <script>
 
       var input = document.getElementById('message-input');
@@ -34,7 +40,9 @@
       const eb = new CrossOriginEventBus()
 
       document.querySelectorAll('iframe').forEach((iframe) => {
-        eb.controller.addChild(iframe)
+        iframe.addEventListener('load', () => {
+          eb.controller.addChild(iframe)
+        })
       })
 
       button.addEventListener('click', onClick);
@@ -51,9 +59,28 @@
 
       eb.registerService('test', () => {
         return new Promise(res => {
-          setTimeout(() => res('hahaha'), 3000)
+          setTimeout(() => res('hahaha'))
         })
       })
+
+      function reload() {
+        document.querySelectorAll('iframe').forEach(iframe => iframe.remove())
+        var i = document.createElement('iframe')
+        i.src = 'http://localhost:8002/example/page2.html'
+        i.width = '480'
+        i.height = '320'
+        document.body.appendChild(i)
+        i.addEventListener('load', () => {
+          eb.controller.addChild(i)
+        })
+      }
+
+      function clicked() {
+        const debugEl = document.querySelector('#debug')
+        debugEl.textContent = eb.controller.outPorts.size
+
+      }
+      clicked()
     </script>
   </body>
 </html>

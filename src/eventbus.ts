@@ -50,11 +50,26 @@ class OutPort {
 }
 
 class EventBusController {
-  private outPorts: Map<any, OutPort>
+  outPorts: Map<any, OutPort>
+  observer 
 
   constructor() {
     this.outPorts = new Map()
+    this.observer = new MutationObserver(this.onObservaedChange.bind(this))
+    this.observer.observe(document.body, {subtree: true, childList: true})
     this.addChild(window)
+  }
+
+  onObservaedChange(change) {
+    for (const rec of change) {
+      if (rec.removedNodes)  {
+        for (const n of rec.removedNodes) {
+          if (n.tagName === 'IFRAME') {
+            this.removeChild(n)
+          }
+        }
+      }
+    }
   }
 
   addChild(context) {
@@ -84,11 +99,7 @@ class EventBusController {
 
   private onControllerEvent(e) {
     const { data } = e
-    if (data.type == 'ready') {
-      console.log('ready')
-    } else {
-      this.broadcast(data)
-    }
+    this.broadcast(data)
   }
 }
 
