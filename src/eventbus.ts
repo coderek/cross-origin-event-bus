@@ -107,7 +107,6 @@ type ICallback = (any) => void
 type IResponder = (...any) => Promise<any>
 
 interface IEventBus  {
-  handshake: (MessageEvent) => void
   send: (any) => void
   request: (key: string, args: any) => Promise<any>
   registerService: (key: string, IResponder) => void
