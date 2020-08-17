@@ -1,5 +1,7 @@
 ## Event Bus for Cross Origin/Context Communication
 
+Cross origin event bus (COEB)
+
 ### Inspiration
 
 Good foundation library for building [Microfrontend](https://martinfowler.com/articles/micro-frontends.html) architecture.
@@ -44,3 +46,11 @@ interface IEventBus  {
   unsubscribe: (evName: string, ICallback) => void
 }
 ```
+
+## How secure is this
+Security is achieved by enforcing host selecting frames to be added. 
+
+## How is this different from web APIs
+
+### [BroadcastChannel](https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel)
+BroadcastChannel is restricted to the same origin while COEB is unrestricted.
